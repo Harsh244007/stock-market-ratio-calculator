@@ -1,12 +1,34 @@
 "use client";
 import { ChangeEvent, useState } from "react";
 const RatioCalculator = () => {
-  const [value, setValue] = useState("1000");
-  const [profit, setProfit] = useState("2");
-  const [loss, setLoss] = useState("1");
-  const [ratioResult, setRatioResult] = useState<string | null>(null);
+  type initialStateTypes = {
+    value: string;
+    profit: string;
+    loss: string;
+    ratioResult: null | string;
+  };
+  const initialState = {
+    value: "1000",
+    profit: "2",
+    loss: "1",
+    ratioResult: null,
+  };
+
+  const [values, setValues] = useState<initialStateTypes>(initialState);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setValues({ ...values, [id]: value });
+  };
 
   const handleCalculate = () => {
+    const { value, profit, loss } = values;
+    const invalidInput = "Invalid Input";
+    if (value === "" || loss === "" || loss === "")
+      return setValues({
+        ...values,
+        ratioResult: invalidInput,
+      });
     const finalProfit = Number(profit);
     const finalTotal = Number(profit) + Number(loss);
     const finalProfitPer = ((finalProfit * 100) / finalTotal).toFixed(2);
@@ -18,58 +40,47 @@ const RatioCalculator = () => {
     const secondLine = `<p>and You profit  ${showProfit} with win-percentage of ${finalProfitPer} % </p>`;
     const thirdLine = `<p>and rest ${showLoss} losses you ${finalLossPer} % </p>`;
     const fourthLine = `<p>Then your stratgy is ${finalProfitPer} % profitable.</p>`;
-    setRatioResult(`${firstLine} ${secondLine} ${thirdLine} ${fourthLine}`);
+    setValues({
+      ...values,
+      ratioResult: `${firstLine} ${secondLine} ${thirdLine} ${fourthLine}`,
+    });
   };
+  const { value, profit, loss, ratioResult } = values;
+
+  const inputFields = [
+    { id: "value", label: "Value", placeholder: "Enter value", value },
+    { id: "profit", label: "Profit (1-10)", placeholder: "Enter profit", value: profit },
+    { id: "loss", label: "Loss (1-10)", placeholder: "Enter loss", value: loss },
+  ];
+  const renderInputs = inputFields.map((field) => (
+    <div className="mb-4" key={field.id}>
+      <label htmlFor={field.id} className="block text-sm font-medium text-white-700 mb-1">
+        {field.label}
+      </label>
+      <input
+        type="number"
+        id={field.id}
+        min="1"
+        max="10"
+        className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight w-full focus:shadow-outline"
+        value={field.value}
+        placeholder={field.placeholder}
+        onChange={handleChange}
+      />
+      {field.id !== "value" && (
+        <p className="text-xs text-gray-500">Enter a value between 1 and 10 for {field.label}</p>
+      )}
+    </div>
+  ));
 
   return (
     <main className="w-full max-w-lg mx-auto h-screen flex items-center justify-center flex-col gap-4 p-2">
       <h2>Ratio Calculator</h2>
-      <div className="mb-4">
-        <label htmlFor="value" className="block text-sm font-medium text-white-700 mb-1">
-          Value
-        </label>
-        <input
-          type="number"
-          id="value"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          value={value}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="profit" className="block text-sm font-medium text-white-700 mb-1">
-          Profile (1-10)
-        </label>
-        <input
-          type="number"
-          id="profit"
-          min="1"
-          max="10"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          value={profit}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setProfit(e.target.value)}
-        />
-        <p className="text-xs text-gray-500">Enter a value between 1 and 10 for Profit</p>
-      </div>
-      <div className="mb-4">
-        <label htmlFor="loss" className="block text-sm font-medium text-white-700 mb-1">
-          Loss (1-10)
-        </label>
-        <input
-          type="number"
-          id="loss"
-          min="1"
-          max="10"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          value={loss}
-          onChange={(e) => setLoss(e.target.value)}
-        />
-        <p className="text-xs text-gray-500">Enter a value between 1 and 10 for Loss</p>
-      </div>
+      {renderInputs}
       <div className="mb-4">
         <button
           onClick={handleCalculate}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:shadow-outline"
         >
           Calculate Ratio
         </button>
